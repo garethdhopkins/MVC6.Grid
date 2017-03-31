@@ -63,6 +63,7 @@ namespace NonFactors.Mvc.Grid
 
         public String CssClasses { get; set; }
         public String PartialViewName { get; set; }
+        public GridPagerType PagerType { get; set; }
         public GridProcessorType ProcessorType { get; set; }
 
         private Int32 CurrentPageValue { get; set; }
@@ -76,13 +77,18 @@ namespace NonFactors.Mvc.Grid
             PagesToDisplay = 5;
             PartialViewName = "MvcGrid/_Pager";
             ProcessorType = GridProcessorType.Post;
+            PagerType = GridPagerType.GridProcessed;
         }
-
+        
         public virtual IQueryable<T> Process(IQueryable<T> items)
         {
-            TotalRows = items.Count();
-
-            return items.Skip((CurrentPage - 1) * RowsPerPage).Take(RowsPerPage);
+            if (PagerType == GridPagerType.UserProcessed 
+                && TotalRows >= items.Count()) //Defaults to GridProcessed if TotalRows hasn't been set
+                return items;
+            else { //(PagerType == GridPagerType.GridProcessed)
+                TotalRows = items.Count();
+                return items.Skip((CurrentPage - 1) * RowsPerPage).Take(RowsPerPage);
+            }
         }
     }
 }
